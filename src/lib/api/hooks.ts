@@ -112,6 +112,21 @@ export function useCreateClient() {
   });
 }
 
+export function useUpdateClient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
+      const { data, error } = await supabase.from('clients').update(patch).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['clients'] });
+      qc.invalidateQueries({ queryKey: ['operations'] });
+    },
+  });
+}
+
 // ---------- Comisionistas ----------
 
 export function useCommissioners() {
@@ -203,7 +218,7 @@ export function useUpsertExchangeRate() {
 
 const MODULE_DETAIL_TABLE: Record<string, string> = {
   transferencia: 'international_transfers(*)',
-  cripto: 'crypto_transactions(*)',
+  cripto: 'crypto_transactions(*, crypto_networks(network_name))',
   efectivo: 'cash_transactions(*)',
 };
 
@@ -213,7 +228,7 @@ export function useOperations(module: 'transferencia' | 'cripto' | 'efectivo') {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('operations')
-        .select(`*, clients(name), ${MODULE_DETAIL_TABLE[module]}`)
+        .select(`*, clients(name, phone, email), ${MODULE_DETAIL_TABLE[module]}`)
         .eq('module', module)
         // por fecha de la operación (la más reciente arriba); created_at solo
         // desempata cuando dos operaciones tienen la misma fecha.

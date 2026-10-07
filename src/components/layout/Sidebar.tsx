@@ -6,18 +6,28 @@ import type { ProfileRole } from '../../lib/auth/AuthContext';
 interface NavItem {
   to: string;
   label: string;
+  tag?: string;
   roles?: ProfileRole[];
   children?: NavItem[];
 }
 
+// Cripto es el negocio principal: va primero y con su propio bloque.
 const NAV: NavItem[] = [
-  { to: '/', label: 'Resumen' },
+  {
+    to: '/operaciones/cripto',
+    label: 'Cripto',
+    tag: 'PRINCIPAL',
+    children: [
+      { to: '/operaciones/cripto', label: 'Operaciones cripto' },
+      { to: '/cripto/clientes', label: 'Clientes cripto' },
+    ],
+  },
+  { to: '/resumen', label: 'Resumen general' },
   {
     to: '/operaciones',
-    label: 'Operaciones',
+    label: 'Otras operaciones',
     children: [
       { to: '/operaciones/transferencias', label: 'Transferencias' },
-      { to: '/operaciones/cripto', label: 'Cripto' },
       { to: '/operaciones/efectivo', label: 'Efectivo' },
     ],
   },
@@ -70,13 +80,16 @@ export function Sidebar({ open, onNavigate }: { open?: boolean; onNavigate?: () 
       <nav style={{ flex: 1, overflowY: 'auto', padding: '4px 12px' }} onClick={onNavigate}>
         {visible.map((item) => (
           <div key={item.to} style={{ marginBottom: item.children ? 4 : 2 }}>
-            <NavLink
-              to={item.to}
-              end={item.to === '/'}
-              style={({ isActive }) => navStyle(isActive, false)}
-            >
-              {item.label}
-            </NavLink>
+            {item.children ? (
+              <div style={{ ...navStyle(false, false), color: 'var(--text)', fontWeight: 600, cursor: 'default' }}>
+                {item.label}
+                {item.tag && <span className="nav-tag">{item.tag}</span>}
+              </div>
+            ) : (
+              <NavLink to={item.to} end={item.to === '/'} style={({ isActive }) => navStyle(isActive, false)}>
+                {item.label}
+              </NavLink>
+            )}
             {item.children && (
               <div style={{ marginLeft: 10, borderLeft: '1px solid var(--border)', paddingLeft: 4 }}>
                 {item.children.map((child) => (

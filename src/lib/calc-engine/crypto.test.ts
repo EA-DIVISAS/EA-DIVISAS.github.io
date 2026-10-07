@@ -48,6 +48,25 @@ describe('calcCrypto', () => {
     expect(toDisplayNumber(r.totalRevenue)).toBe(5000 * 17.15 + 100);
   });
 
+  it('modo rápido: precio de costo + % de comisión → la ganancia es exactamente la comisión', () => {
+    // 10,000 USDT a 18.45 con 1.5% → costo 184,500; comisión 2,767.50; cliente paga 187,267.50.
+    const r = calcCrypto({ quantity: 10000, marketPrice: 18.45, buyPrice: 18.45, sellPrice: 18.45, customerFeePercent: 1.5 });
+    expect(toDisplayNumber(r.acquisitionCost)).toBe(184500);
+    expect(toDisplayNumber(r.customerFeeAmount)).toBe(2767.5);
+    expect(toDisplayNumber(r.totalRevenue)).toBe(187267.5);
+    expect(toDisplayNumber(r.totalSpread)).toBe(0);
+    expect(toDisplayNumber(r.netProfit)).toBe(2767.5);
+    expect(toDisplayNumber(r.marginPercent)).toBeCloseTo(1.48, 2); // 2767.5 / 187267.5
+  });
+
+  it('comisión % + spread de precio se suman sin mezclarse', () => {
+    // compra 18.40, vende 18.50, 1% sobre 185,000 → comisión 1,850 + spread 1,000 = 2,850.
+    const r = calcCrypto({ quantity: 10000, marketPrice: 18.45, buyPrice: 18.4, sellPrice: 18.5, customerFeePercent: 1, networkFee: 20 });
+    expect(toDisplayNumber(r.customerFeeAmount)).toBe(1850);
+    expect(toDisplayNumber(r.totalSpread)).toBe(1000);
+    expect(toDisplayNumber(r.netProfit)).toBe(2830); // 2850 − 20 de gas
+  });
+
   it('utilidad neta = ingresos − costo de adquisición − comisión exchange (venta) − red − otros costos, sin errores de redondeo', () => {
     const input = {
       quantity: 12345.6789,

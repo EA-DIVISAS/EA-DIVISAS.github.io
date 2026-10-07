@@ -8,6 +8,7 @@ import { CryptoModulePage } from './pages/operations/CryptoModulePage';
 import { TransfersModulePage } from './pages/operations/TransfersModulePage';
 import { CashModulePage } from './pages/operations/CashModulePage';
 import { ClientsPage } from './pages/ClientsPage';
+import { CryptoClientsPage } from './pages/CryptoClientsPage';
 import { ExchangeRatesPage } from './pages/ExchangeRatesPage';
 import { ProvidersPage } from './pages/ProvidersPage';
 import { CommissionsPage } from './pages/CommissionsPage';
@@ -28,9 +29,12 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<Protected><DashboardPage /></Protected>} />
+      {/* Cripto es el negocio principal: la pantalla de inicio es Operaciones cripto. */}
+      <Route path="/" element={<Navigate to="/operaciones/cripto" replace />} />
+      <Route path="/resumen" element={<Protected><DashboardPage /></Protected>} />
       <Route path="/operaciones/transferencias" element={<Protected><TransfersModulePage /></Protected>} />
       <Route path="/operaciones/cripto" element={<Protected><CryptoModulePage /></Protected>} />
+      <Route path="/cripto/clientes" element={<Protected><CryptoClientsPage /></Protected>} />
       <Route path="/operaciones/efectivo" element={<Protected><CashModulePage /></Protected>} />
       <Route path="/clientes" element={<Protected><ClientsPage /></Protected>} />
       <Route path="/tipos-de-cambio" element={<Protected><ExchangeRatesPage /></Protected>} />
